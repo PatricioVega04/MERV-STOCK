@@ -1,10 +1,20 @@
 import User from '../models/user.model.js'; 
 import bcrypt from 'bcryptjs'; 
 import { createAccessToken } from '../libs/jwt.js'; 
+import jwt from 'jsonwebtoken';
+import { TOKEN_SECRET } from '../config.js';
+
 
 export const register = async (req, res) => {
     const { email, password, username } = req.body;
     try {
+       const UserFound = await User.findOne({ email });
+       {
+            if (UserFound) {
+                return res.status(400).json(["El usuario ya existe"]);
+            }
+        };
+
         const passwordHash = await bcrypt.hash(password, 10);
         const newUser = new User({ email, password: passwordHash, username });
         const userSaved = await newUser.save();
@@ -25,7 +35,7 @@ export const login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, UserFound.password);
         if (!isMatch) return res.status(400).json({ message: "Credenciales inválidas" });
         const token = await createAccessToken({ id: UserFound.id });
-        res.cookie("token", token);
+        res.cookie("token", token); // Asegúrate de que el token se envíe con las cookies
         res.json({ id: UserFound.id, username: UserFound.username, email: UserFound.email });
     } catch (error) {
         console.error(error);
@@ -36,6 +46,23 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
     res.clearCookie("token");
     res.sendStatus(200);
+};
+
+
+export const verifyToken = (req, res) => {
+    const token = req.cookies.token; 
+    
+    if (!token) return res.status(401).json({ message: "No se proporcionó un token" });
+
+    jwt.verify(token, TOKEN_SECRET, async  (err, user) => {
+
+        if (err) return res.status(401).json({ message: "Token inválido" });
+        const UserFound = await User.findById(user.id);
+
+        if(!UserFound) return res.status(404).json({ message: "Usuario no encontrado" });
+
+       return res.json({ id: UserFound.id, username: UserFound.username, email: UserFound.email });
+    });
 };
 
 export const profile = async (req, res) => {
