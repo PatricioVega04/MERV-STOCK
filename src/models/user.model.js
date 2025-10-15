@@ -17,8 +17,15 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true,
         unique: true
+    },
+      isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String
     }
 
-}, { timestamps: true })
+}, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

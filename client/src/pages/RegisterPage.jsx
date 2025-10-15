@@ -1,57 +1,48 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";    
+import { useNavigate, Link } from "react-router-dom";
 
 function RegisterPage() {
     const { register, handleSubmit, formState: { errors } } = useForm();
-    
-    const { signUp, user, isAuthenticated, errors: registerErrors } = useAuth();
+    const { signup, isAuthenticated, errors: registerErrors } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (isAuthenticated) {
-            navigate("/tasks");
-            console.log("Usuario ya autenticado:", user);
-        }
-    }, [isAuthenticated, user, navigate]); 
+        if (isAuthenticated) navigate("/products");
+    }, [isAuthenticated]);
 
- 
-    const onSubmit = handleSubmit(async (values) => {
-        signUp(values); 
-    });
+    const onSubmit = (values) => signup(values);
 
     return (
-        <div>
-            
-            {registerErrors.length > 0 && ( 
-                <div style={{ color: 'red', marginBottom: '10px', padding: '10px', border: '1px solid red', borderRadius: '4px' }}>
-                    {registerErrors.map((error, i) => (
-                        <p key={i} style={{ margin: '5px 0' }}>
-                            {error.message} 
-                            {error.field && ` (Campo: ${error.field})`} 
-                        </p>
-                    ))}
-                </div>
-            )}
+        <div className="auth-container">
+            <div className="form-card">
+                <h1>Registro</h1>
 
-           
-            <form onSubmit={onSubmit}>
-                <input type="text" {...register("username", { required: true })} placeholder="Nombre de usuario" />
-                {errors.username && <span style={{ color: 'orange', fontSize: '0.8em' }}>Este campo es obligatorio</span>}
+                {registerErrors.map((error, i) => (
+                    <div className="error-message" key={i} style={{backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '5px', marginBottom: '1rem' }}>{error}</div>
+                ))}
 
-                <input type="email" {...register("email", { required: true })} placeholder="Email" />
-                {errors.email && <span style={{ color: 'orange', fontSize: '0.8em' }}>Este campo es obligatorio</span>}
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <label htmlFor="username">Nombre de Usuario</label>
+                    <input type="text" {...register("username", { required: true })} />
+                    {errors.username && <p className="error-message">El nombre de usuario es requerido</p>}
+                    
+                    <label htmlFor="email">Email</label>
+                    <input type="email" {...register("email", { required: true })} />
+                    {errors.email && <p className="error-message">El email es requerido</p>}
+                    
+                    <label htmlFor="password">Contraseña</label>
+                    <input type="password" {...register("password", { required: true })} />
+                    {errors.password && <p className="error-message">La contraseña es requerida</p>}
 
-                <input type="password" {...register("password", { required: true })} placeholder="Contraseña" />
-                {errors.password && <span style={{ color: 'orange', fontSize: '0.8em' }}>Este campo es obligatorio</span>}
+                    <button type="submit" className="btn btn-primary">Registrarse</button>
+                </form>
 
-                <button type="submit">Registrar</button>
-            </form>
-            <p>
-                ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión aquí</Link>
-            </p>
+                <p style={{marginTop: '1.5rem'}}>
+                    ¿Ya tienes una cuenta? <Link to="/login" className="form-link">Inicia Sesión</Link>
+                </p>
+            </div>
         </div>
     );
 }

@@ -1,54 +1,44 @@
-
-import { useForm } from 'react-hook-form';
-import { useAuth } from '../context/AuthContext';
-import { useEffect } from 'react'; 
-import { useNavigate } from 'react-router-dom'; 
-import { Link } from 'react-router-dom';
+import { useForm } from "react-hook-form";
+import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function LoginPage() {
     const { register, handleSubmit, formState: { errors } } = useForm();
-    // Obtener signin, user, isAuthenticated y los errores del backend (authErrors renombrados a loginErrors)
-    const { signin, user, isAuthenticated, errors: loginErrors } = useAuth();
-    const navigate = useNavigate(); // Inicializa navigate
+    const { signin, errors: signinErrors, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
-    // Redirigir al usuario después de un login exitoso
+    const onSubmit = (data) => signin(data);
+
     useEffect(() => {
-        if (isAuthenticated) {
-            navigate("/tasks"); // O a la ruta que desees después del login
-        }
-    }, [isAuthenticated, navigate]); // Añade navigate a las dependencias
-
-    const onSubmit = handleSubmit((data) => {
-        signin(data);
-    });
+        if (isAuthenticated) navigate("/products");
+    }, [isAuthenticated]);
 
     return (
-        <div>
-            {/* BLOQUE PARA MOSTRAR ERRORES DEL BACKEND (authErrors del AuthContext) */}
-            {loginErrors.length > 0 && (
-                <div style={{ color: 'red', marginBottom: '10px', padding: '10px', border: '1px solid red', borderRadius: '4px' }}>
-                    {loginErrors.map((error, i) => (
-                        <p key={i} style={{ margin: '5px 0' }}>
-                            {error.message} {/* Muestra el mensaje de error */}
-                            {error.field && ` (Campo: ${error.field})`} {/* Muestra el campo si está disponible */}
-                        </p>
-                    ))}
-                </div>
-            )}
+        <div className="auth-container">
+            <div className="form-card">
+                <h1>Iniciar Sesión</h1>
+                
+                {signinErrors.map((error, i) => (
+                    <div className="error-message" key={i} style={{backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '5px', marginBottom: '1rem' }}>{error}</div>
+                ))}
+                
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <label htmlFor="email">Email</label>
+                    <input type="email" {...register("email", { required: true })} />
+                    {errors.email && <p className="error-message">El email es requerido</p>}
 
-            <form onSubmit={onSubmit}>
-                <input type="email" {...register("email", { required: true })} placeholder="Email" />
-                {errors.email && <span style={{ color: 'orange', fontSize: '0.8em' }}>Este campo es obligatorio</span>}
+                    <label htmlFor="password">Contraseña</label>
+                    <input type="password" {...register("password", { required: true })} />
+                    {errors.password && <p className="error-message">La contraseña es requerida</p>}
 
-                <input type="password" {...register("password", { required: true })} placeholder="Contraseña" />
-                {errors.password && <span style={{ color: 'orange', fontSize: '0.8em' }}>Este campo es obligatorio</span>}
+                    <button type="submit" className="btn btn-primary">Ingresar</button>
+                </form>
 
-                <button type="submit">Iniciar Sesión</button>
-            </form>
-
-            <p>
-                ¿No tienes una cuenta? <Link to="/register">Regístrate aquí</Link>
-            </p>
+                <p style={{marginTop: '1.5rem'}}>
+                    ¿No tienes una cuenta? <Link to="/register" className="form-link">Regístrate</Link>
+                </p>
+            </div>
         </div>
     );
 }

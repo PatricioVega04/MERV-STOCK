@@ -1,6 +1,5 @@
-
 import { createContext, useState, useContext, useEffect } from "react";
-import { registerRequest, loginRequest, verifyToken} from "../api/auth";
+import { registerRequest, loginRequest, verifyTokenRequest } from "../api/auth";
 import Cookies from "js-cookie";
 
 export const AuthContext = createContext();
@@ -16,127 +15,101 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [authErrors, setAuthErrors] = useState([]);
+    const [errors, setErrors] = useState([]); 
     const [loading, setLoading] = useState(true);
 
-    
-    const signUp = async (userData) => { 
-        try { 
+    // --- FUNCIÓN DE REGISTRO CORREGIDA ---
+    const signup = async (userData) => { 
+        try {
             const res = await registerRequest(userData);
-            setUser(res.data);
-            setIsAuthenticated(true);
-            setAuthErrors([]); 
+            console.log("Respuesta del registro:", res.data);
+            return res.data;
         } catch (error) {
-            console.error("Error en signUp (AuthContext):", error.response ? error.response.data : error); // Log para depuración
-            if (error.response && error.response.data) {
-                if (Array.isArray(error.response.data.errors)) {
-                    setAuthErrors(error.response.data.errors);
-                } 
-                else if (Array.isArray(error.response.data) && error.response.data.every(item => typeof item === 'string')) {
-                    setAuthErrors(error.response.data.map(msg => ({ message: msg })));
-                }
-                else if (typeof error.response.data.message === 'string') {
-                    setAuthErrors([{ message: error.response.data.message }]);
-                } 
-                else if (error.response.data.data && typeof error.response.data.data.message === 'string') {
-                    setAuthErrors([{ message: error.response.data.data.message }]);
-                }
-                else if (typeof error.response.data === 'string') {
-                    setAuthErrors([{ message: error.response.data }]);
-                }
-                else {
-                    setAuthErrors([{ message: "Error desconocido del servidor (respuesta no esperada)." }]);
-                }
+            console.error("Error en signup (AuthContext):", error.response?.data);
+            
+            // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+            // Nos aseguramos de que 'errors' sea siempre un array.
+            const errorData = error.response.data;
+            if (Array.isArray(errorData)) {
+                setErrors(errorData);
+            } else if (errorData.message) {
+                setErrors([errorData.message]); // Convertimos el objeto de error en un array de strings
             } else {
-                setAuthErrors([{ message: "Error de conexión o el servidor no responde." }]);
+                setErrors(["Ha ocurrido un error inesperado"]);
             }
-            setIsAuthenticated(false); 
         }
     };
 
+    // --- FUNCIÓN DE LOGIN (SIN CAMBIOS GRANDES) ---
     const signin = async (userData) => { 
         try {
             const res = await loginRequest(userData);
             setUser(res.data);
             setIsAuthenticated(true);
-            setAuthErrors([]); 
+            setErrors([]); 
         } catch (error) {
-            console.error("Error en signin (AuthContext):", error.response ? error.response.data : error); 
-            if (error.response && error.response.data) {
-                if (Array.isArray(error.response.data.errors)) {
-                    setAuthErrors(error.response.data.errors);
-                } 
-                else if (Array.isArray(error.response.data) && error.response.data.every(item => typeof item === 'string')) {
-                    setAuthErrors(error.response.data.map(msg => ({ message: msg })));
-                }
-                else if (typeof error.response.data.message === 'string') {
-                    setAuthErrors([{ message: error.response.data.message }]);
-                } 
-                else if (error.response.data.data && typeof error.response.data.data.message === 'string') {
-                    setAuthErrors([{ message: error.response.data.data.message }]);
-                }
-                else if (typeof error.response.data === 'string') { 
-                    setAuthErrors([{ message: error.response.data }]);
-                }
-                else {
-                    setAuthErrors([{ message: "Error desconocido del servidor (respuesta no esperada)." }]);
-                }
-            } else {
-                setAuthErrors([{ message: "Error de conexión o el servidor no responde." }]);
-            }
-            setIsAuthenticated(false);
+            console.error("Error en signin (AuthContext):", error.response?.data); 
+            // El backend devolverá un error si el usuario no está verificado.
+            // Lo guardamos para mostrarlo en el formulario de login.
+            setErrors(error.response.data.message ? [error.response.data.message] : error.response.data);
         }
     };
+
     const logout = () => {
         Cookies.remove("token"); 
         setIsAuthenticated(false);
         setUser(null);
     };
 
+    // Limpia los errores después de 5 segundos
     useEffect(() => {
-        if (authErrors.length > 0) {
-            const timer = setTimeout(() => setAuthErrors([]), 5000);
+        if (errors.length > 0) {
+            const timer = setTimeout(() => setErrors([]), 5000);
             return () => clearTimeout(timer);
         }
-    }, [authErrors]);
+    }, [errors]);
 
+    // Verifica la autenticación al cargar la página
     useEffect(() => {
         async function checkAuth() {
             const cookies = Cookies.get();
             if (!cookies.token) {
                 setIsAuthenticated(false);
-                setUser(null);
                 setLoading(false);
+                setUser(null);
                 return;
             }
 
-                try {
-                    const res = await verifyToken(); 
-                    console.log("Token verificado:", res.data);
-
-
-                    if (res.status === 200 && res.data) {
-                    setIsAuthenticated(true);
-                    setUser(res.data);
-                } else {
+            try {
+                const res = await verifyTokenRequest(cookies.token); 
+                if (!res.data) {
                     setIsAuthenticated(false);
-                    setUser(null);
+                    setLoading(false);
+                    return;
                 }
-                } catch (error) {
-                    console.error("Error al verificar el token:", error);
-                    setIsAuthenticated(false);
-                    setUser(null);
-                }
-                finally {
-                    setLoading(false); 
-                }
-
+                
+                setIsAuthenticated(true);
+                setUser(res.data);
+                setLoading(false);
+            } catch (error) {
+                setIsAuthenticated(false);
+                setUser(null);
+                setLoading(false);
             }
+        }
         checkAuth();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ signUp, signin, logout, user, isAuthenticated, loading, errors: authErrors }}>
+        <AuthContext.Provider value={{ 
+            signup, // <-- Nombre corregido a minúscula
+            signin, 
+            logout, 
+            user, 
+            isAuthenticated, 
+            loading, 
+            errors 
+        }}>
             {children}
         </AuthContext.Provider>
     );
