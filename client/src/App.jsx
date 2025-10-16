@@ -13,6 +13,7 @@ import ProductFormPage from "./pages/ProductFormPage";
 import HistoryPage from "./pages/HistoryPage";
 import ProfilePage from "./pages/ProfilePage";
 import ConfirmationPage from './pages/ConfirmationPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/confirm/:token" element={<ConfirmationPage />} />
 
               <Route element={<ProtectedRoute />}>

@@ -12,7 +12,12 @@ function RegisterPage() {
         if (isAuthenticated) navigate("/products");
     }, [isAuthenticated]);
 
-    const onSubmit = (values) => signup(values);
+   const onSubmit = async (values) => {
+        const result = await signup(values);
+        if (result) {
+            navigate("/verify-email");
+        }
+    };
 
     return (
         <div className="auth-container">

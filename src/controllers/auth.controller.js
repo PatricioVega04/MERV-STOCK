@@ -14,6 +14,15 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 export const register = async (req, res) => {
     const { email, password, username } = req.body;
     try {
+        // --- INICIO DE LA DEPURACIÓN ---
+        console.log("--- DIAGNÓSTICO DE SENDGRID ---");
+        console.log("API Key cargada:", process.env.SENDGRID_API_KEY ? `Sí, comienza con ${process.env.SENDGRID_API_KEY.substring(0, 5)}...` : "NO, está undefined");
+        console.log("Email remitente:", process.env.VERIFIED_SENDER_EMAIL);
+        console.log("---------------------------------");
+        // --- FIN DE LA DEPURACIÓN ---
+
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
         const userFound = await User.findOne({ email });
         if (userFound) {
             return res.status(400).json(["El email ya está en uso"]);
@@ -26,36 +35,29 @@ export const register = async (req, res) => {
             username,
             email,
             password: passwordHash,
-            verificationToken, // 'isVerified' es 'false' por defecto
+            verificationToken,
         });
         await newUser.save();
 
-        // --- 3. Lógica para enviar el correo con SendGrid ---
-        const confirmationUrl = `http://localhost:5173/confirm/${verificationToken}`; // URL de tu frontend
+        const confirmationUrl = `http://localhost:5173/confirm/${verificationToken}`;
 
         const msg = {
             to: newUser.email,
-            from: process.env.VERIFIED_SENDER_EMAIL, // Tu email verificado
+            from: process.env.VERIFIED_SENDER_EMAIL,
             subject: 'Confirma tu cuenta en Gestor de Stock',
-            html: `
-                <h1>¡Bienvenido a Gestor de Stock!</h1>
-                <p>Por favor, haz clic en el siguiente enlace para activar tu cuenta:</p>
-                <a href="${confirmationUrl}" style="padding: 10px 20px; background-color: #8a2be2; color: #fff; text-decoration: none; border-radius: 5px;">Confirmar mi Cuenta</a>
-            `,
+            html: `<h1>¡Bienvenido!</h1><p>Haz clic para activar tu cuenta:</p><a href="${confirmationUrl}">Confirmar Cuenta</a>`,
         };
 
         await sgMail.send(msg);
 
-        res.status(201).json({
-            message: "Usuario registrado. Revisa tu email para confirmar tu cuenta."
-        });
+        res.status(201).json({ message: "Usuario registrado. Revisa tu email." });
 
     } catch (error) {
-        console.error("Error en el registro:", error.response?.body || error);
+        // Este log ahora mostrará el error exacto de SendGrid si lo hay
+        console.error("Error detallado en el registro:", error.response ? error.response.body : error);
         res.status(500).json({ message: "Error al registrar el usuario" });
     }
 };
-
 export const confirmEmail = async (req, res) => {
     try {
         const { token } = req.params;

@@ -20,25 +20,18 @@ export const AuthProvider = ({ children }) => {
 
     // --- FUNCIÓN DE REGISTRO CORREGIDA ---
     const signup = async (userData) => { 
-        try {
-            const res = await registerRequest(userData);
-            console.log("Respuesta del registro:", res.data);
-            return res.data;
-        } catch (error) {
-            console.error("Error en signup (AuthContext):", error.response?.data);
-            
-            // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-            // Nos aseguramos de que 'errors' sea siempre un array.
-            const errorData = error.response.data;
-            if (Array.isArray(errorData)) {
-                setErrors(errorData);
-            } else if (errorData.message) {
-                setErrors([errorData.message]); // Convertimos el objeto de error en un array de strings
-            } else {
-                setErrors(["Ha ocurrido un error inesperado"]);
-            }
-        }
-    };
+    try {
+        const res = await registerRequest(userData);
+        // --- CAMBIO CLAVE ---
+        // Devolvemos la respuesta para que el componente sepa que todo fue bien.
+        return res.data; 
+    } catch (error) {
+        console.error("Error en signup (AuthContext):", error.response?.data);
+        setErrors(error.response.data);
+        // Devolvemos `null` o `false` para indicar que hubo un error.
+        return null;
+    }
+};
 
     // --- FUNCIÓN DE LOGIN (SIN CAMBIOS GRANDES) ---
     const signin = async (userData) => { 
