@@ -7,13 +7,10 @@ function ConfirmationPage() {
     const [error, setError] = useState(false);
     const { token } = useParams();
 
-    // Usamos useRef para crear una bandera que sobrevive a los re-renderizados sin causar uno nuevo.
     const verificationAttempted = useRef(false);
 
     useEffect(() => {
-        // Solo ejecutamos la verificación si hay un token Y si no lo hemos intentado antes.
         if (token && !verificationAttempted.current) {
-            // Inmediatamente marcamos que el intento se está haciendo.
             verificationAttempted.current = true;
 
             const confirmAccount = async () => {
@@ -29,7 +26,7 @@ function ConfirmationPage() {
 
             confirmAccount();
         }
-    }, [token]); // El efecto solo depende del token, no de la bandera.
+    }, [token]); 
 
     return (
         <div className="auth-container">

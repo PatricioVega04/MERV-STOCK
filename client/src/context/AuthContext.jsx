@@ -18,22 +18,17 @@ export const AuthProvider = ({ children }) => {
     const [errors, setErrors] = useState([]); 
     const [loading, setLoading] = useState(true);
 
-    // --- FUNCIÓN DE REGISTRO CORREGIDA ---
     const signup = async (userData) => { 
     try {
         const res = await registerRequest(userData);
-        // --- CAMBIO CLAVE ---
-        // Devolvemos la respuesta para que el componente sepa que todo fue bien.
         return res.data; 
     } catch (error) {
         console.error("Error en signup (AuthContext):", error.response?.data);
         setErrors(error.response.data);
-        // Devolvemos `null` o `false` para indicar que hubo un error.
         return null;
     }
 };
 
-    // --- FUNCIÓN DE LOGIN (SIN CAMBIOS GRANDES) ---
     const signin = async (userData) => { 
         try {
             const res = await loginRequest(userData);
@@ -41,9 +36,7 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
             setErrors([]); 
         } catch (error) {
-            console.error("Error en signin (AuthContext):", error.response?.data); 
-            // El backend devolverá un error si el usuario no está verificado.
-            // Lo guardamos para mostrarlo en el formulario de login.
+            console.error("Error en signin (AuthContext):", error.response?.data);
             setErrors(error.response.data.message ? [error.response.data.message] : error.response.data);
         }
     };
@@ -54,7 +47,6 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
-    // Limpia los errores después de 5 segundos
     useEffect(() => {
         if (errors.length > 0) {
             const timer = setTimeout(() => setErrors([]), 5000);
@@ -62,7 +54,6 @@ export const AuthProvider = ({ children }) => {
         }
     }, [errors]);
 
-    // Verifica la autenticación al cargar la página
     useEffect(() => {
         async function checkAuth() {
             const cookies = Cookies.get();
@@ -95,7 +86,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ 
-            signup, // <-- Nombre corregido a minúscula
+            signup, 
             signin, 
             logout, 
             user, 

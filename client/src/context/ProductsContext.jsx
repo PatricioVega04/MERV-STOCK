@@ -31,7 +31,6 @@ export function ProductsProvider({ children }) {
     };
 
     const createProduct = async (product) => {
-        console.log("🚦 PASO 2: Contexto - createProduct llamado con:", product);
         try {
             await createProductRequest(product);
         } catch (error) {

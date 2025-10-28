@@ -14,13 +14,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 export const register = async (req, res) => {
     const { email, password, username } = req.body;
     try {
-        // --- INICIO DE LA DEPURACIÓN ---
-        console.log("--- DIAGNÓSTICO DE SENDGRID ---");
-        console.log("API Key cargada:", process.env.SENDGRID_API_KEY ? `Sí, comienza con ${process.env.SENDGRID_API_KEY.substring(0, 5)}...` : "NO, está undefined");
-        console.log("Email remitente:", process.env.VERIFIED_SENDER_EMAIL);
-        console.log("---------------------------------");
-        // --- FIN DE LA DEPURACIÓN ---
-
+        
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
         const userFound = await User.findOne({ email });
@@ -53,7 +47,6 @@ export const register = async (req, res) => {
         res.status(201).json({ message: "Usuario registrado. Revisa tu email." });
 
     } catch (error) {
-        // Este log ahora mostrará el error exacto de SendGrid si lo hay
         console.error("Error detallado en el registro:", error.response ? error.response.body : error);
         res.status(500).json({ message: "Error al registrar el usuario" });
     }

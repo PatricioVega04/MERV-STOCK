@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'; // <-- ESTA LÍNEA FALTABA
+import dotenv from 'dotenv'; 
 dotenv.config();
 
 import app from './app.js';

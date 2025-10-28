@@ -11,7 +11,6 @@ function Navbar() {
           Gestor de <span>Stock</span>
         </Link>
         
-        {/* Usamos un div para agrupar todos los links de la derecha */}
         <div className="navbar-right-cluster">
           <ul className="navbar-links">
             {isAuthenticated ? (
@@ -38,7 +37,6 @@ function Navbar() {
             )}
           </ul>
 
-          {/* El ícono de perfil va fuera de la lista de links para un mejor control */}
           {isAuthenticated && (
             <div className="navbar-profile-item">
               <Link to="/profile" className="navbar-profile-icon">

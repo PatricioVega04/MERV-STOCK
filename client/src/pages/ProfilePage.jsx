@@ -7,7 +7,7 @@ function ProfilePage() {
 
     const handleLogout = () => {
         logout();
-        navigate('/'); // Redirige al inicio después de cerrar sesión
+        navigate('/'); 
     };
 
     return (

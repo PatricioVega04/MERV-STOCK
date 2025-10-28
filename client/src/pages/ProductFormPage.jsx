@@ -75,7 +75,7 @@ function ProductFormPage() {
                 {errors.color && <p className="error-message">{errors.color.message}</p>}
                 
                 <label htmlFor="price">Precio</label>
-                <input type="number" step="0.01" {...register("price", { valueAsNumber: true })} />
+                <input type="number" step="0.01" {...register("price")} />
                 {errors.price && <p className="error-message">{errors.price.message}</p>}
 
                 <h2>Talles y Stock</h2>
@@ -94,8 +94,8 @@ function ProductFormPage() {
                 <button type="button" onClick={() => append({ size: '', quantity: 0 })} className="btn btn-secondary" style={{ width: '100%', marginTop: '0.5rem' }}>
                     Añadir Talle
                 </button>
-                
-                <button type="submit" className="btn-primary" style={{ width: '100%' }}>Guardar Producto</button>
+
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Guardar Producto</button>
             </form>
         </div>
     );
